@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Machine à Contenu IA™ — Web Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .glass-panel { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-indigo-600 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center space-x-3 transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none z-50 border border-indigo-400/30">
+        <i class="fa-solid fa-circle-check text-xl"></i>
+        <span id="toast-msg" class="font-medium text-sm">Copié dans le presse-papier !</span>
+    </div>
+
+    <!-- Header & Search Bar -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center justify-between w-full md:w-auto">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-indigo-500/20">
+                    ⚡
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="font-extrabold text-base md:text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">MACHINE À CONTENU IA™</h1>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">PERC™</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Transforme ChatGPT en système de création</p>
+                </div>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden text-slate-400 hover:text-white p-2" onclick="toggleMobileNav()">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative w-full md:w-96">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </div>
+            <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Rechercher un pilier, prompt, hook, checklist..." 
+                class="w-full pl-10 pr-10 py-2 bg-slate-900/90 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+            <button id="search-clear" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Navigation Bar (Tabs) -->
+    <nav class="bg-slate-900/90 border-b border-slate-800/80 px-4 lg:px-8 py-2 overflow-x-auto custom-scrollbar">
+        <div class="flex space-x-1 min-w-max" id="nav-container">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center space-x-2 bg-indigo-600 text-white shadow-md shadow-indigo-600/20">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span>Tableau de Bord</span>
+            </button>
+            <button onclick="switchTab('pilier1')" id="nav-pilier1" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-bullseye"></i>
+                <span>P1 — Précision</span>
+            </button>
+            <button onclick="switchTab('pilier2')" id="nav-pilier2" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-microphone"></i>
+                <span>P2 — Voix & Style</span>
+            </button>
+            <button onclick="switchTab('pilier3')" id="nav-pilier3" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-magnet"></i>
+                <span>P3 — Hooks & Story</span>
+            </button>
+            <button onclick="switchTab('pilier4')" id="nav-pilier4" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>P4 — Formats</span>
+            </button>
+            <button onclick="switchTab('pilier5')" id="nav-pilier5" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-arrows-spin"></i>
+                <span>P5 — Recyclage 1→10</span>
+            </button>
+            <button onclick="switchTab('pilier6')" id="nav-pilier6" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-vial"></i>
+                <span>P6 — Variations</span>
+            </button>
+            <button onclick="switchTab('prompts')" id="nav-prompts" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-box-archive"></i>
+                <span>Bibliothèque Prompts</span>
+            </button>
+            <button onclick="switchTab('checker')" id="nav-checker" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-clipboard-check text-emerald-400"></i>
+                <span>Checklist & Score /10</span>
+            </button>
+            <button onclick="switchTab('plan30')" id="nav-plan30" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-calendar-check text-amber-400"></i>
+                <span>Plan 30 Jours</span>
+            </button>
+            <button onclick="switchTab('annexes')" id="nav-annexes" class="nav-tab px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition flex items-center space-x-2">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Annexes & Templates</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 px-4 lg:px-8 py-8 max-w-7xl mx-auto w-full space-y-8">
+
+        <!-- SEARCH RESULTS PANEL -->
+        <div id="search-results-panel" class="hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-white">Résultats de la recherche</h2>
+                    <p class="text-xs text-slate-400" id="search-count">0 résultat trouvé</p>
+                </div>
+                <button onclick="clearSearch()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 rounded-lg">Fermer la recherche</button>
+            </div>
+            <div id="search-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- DASHBOARD TAB -->
+        <div id="tab-dashboard" class="tab-content space-y-8">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-purple-950 p-8 md:p-10 border border-indigo-800/40 shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl space-y-4">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded-full text-xs font-bold">
+                        <span>Système Opérationnel IA pour Créateurs & Entrepreneurs</span>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
+                        La Machine à Contenu IA™
+                    </h2>
+                    <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                        Transforme ChatGPT en un véritable système de création stratégique. La méthode PERC en 6 piliers pour planifier, éliminer le superflu, remplacer le vague et créer du contenu authentique prêt à diffuser.
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <button onclick="switchTab('pilier1')" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-sm transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2">
+                            <span>Démarrer le Parcours</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                        <button onclick="switchTab('checker')" class="px-5 py-3 bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-xl font-semibold text-sm transition flex items-center space-x-2">
+                            <i class="fa-solid fa-clipboard-check text-emerald-400"></i>
+                            <span>Évaluer un Contenu (/10)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Méthode PERC Grid -->
+            <div class="space-y-4">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                    <h3 class="text-lg font-bold text-white">Comment fonctionne la Méthode PERC ?</h3>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/40 transition">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-black text-lg mb-3">P</div>
+                        <h4 class="font-bold text-white text-base mb-1">PLANIFIER</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Définir clairement ce que tu veux obtenir avant de demander quoi que ce soit à l’IA (sujet, audience, ton, format).</p>
+                    </div>
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 hover:border-purple-500/40 transition">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-black text-lg mb-3">E</div>
+                        <h4 class="font-bold text-white text-base mb-1">ÉLIMINER</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Identifier et supprimer les erreurs, le jargon et les demandes vagues qui produisent du contenu générique.</p>
+                    </div>
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 hover:border-emerald-500/40 transition">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-black text-lg mb-3">R</div>
+                        <h4 class="font-bold text-white text-base mb-1">REMPLACER</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Remplacer les mauvaises habitudes par des structures, templates et prompts à haute spécificité.</p>
+                    </div>
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 hover:border-amber-500/40 transition">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-black text-lg mb-3">C</div>
+                        <h4 class="font-bold text-white text-base mb-1">CRÉER</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Produire immédiatement un élément concret : un bloc de contexte, un guide de style, des hooks ou un carrousel.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Access Modules -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-compass text-indigo-400"></i>
+                    <span>Accès Direct aux 6 Piliers</span>
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div onclick="switchTab('pilier1')" class="cursor-pointer bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-900/80 transition group">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-400">Pilier 1</span>
+                            <i class="fa-solid fa-arrow-right text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-base mb-2">Parler à l'IA avec Précision</h4>
+                        <p class="text-xs text-slate-400">Crée ton Bloc de Contexte Maître et stoppe les réponses banales de ChatGPT.</p>
+                    </div>
+
+                    <div onclick="switchTab('pilier2')" class="cursor-pointer bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-purple-500/50 hover:bg-slate-900/80 transition group">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-400">Pilier 2</span>
+                            <i class="fa-solid fa-arrow-right text-slate-600 group-hover:text-purple-400 group-hover:translate-x-1 transition"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-base mb-2">Donner ta Voix à ChatGPT</h4>
+                        <p class="text-xs text-slate-400">Utilise les 5 marqueurs de personnalité pour extraire ton Guide de Style Unique.</p>
+                    </div>
+
+                    <div onclick="switchTab('pilier3')" class="cursor-pointer bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-pink-500/50 hover:bg-slate-900/80 transition group">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-pink-500/10 text-pink-400">Pilier 3</span>
+                            <i class="fa-solid fa-arrow-right text-slate-600 group-hover:text-pink-400 group-hover:translate-x-1 transition"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-base mb-2">Capter l'Attention & Raconter</h4>
+                        <p class="text-xs text-slate-400">Générateur de 10 Hooks (5 familles) et structure Storytelling authentique.</p>
+                    </div>
+
+                    <div onclick="switchTab('pilier4')" class="cursor-pointer bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-900/80 transition group">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400">Pilier 4</span>
+                            <i class="fa-solid fa-arrow-right text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-base mb-2">Générateur de Formats</h4>
+                        <p class="text-xs text-slate-400">Prompts spécialisés pour Carrousels, Vidéos courtes, Threads X et LinkedIn.</p>
+                    </div>
+
+                    <div onclick="switchTab('pilier5')" class="cursor-pointer bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-900/80 transition group">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400">Pilier 5</span>
+                            <i class="fa-solid fa-arrow-right text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-base mb-2">Recyclage 1 → 10</h4>
+                        <p class="text-xs text-slate-400">Transforme un seul contenu pilier en 10 déclinaisons multicanales adaptées.</p>
+                    </div>
+
+                    <div onclick="switchTab('pilier6')" class="cursor-pointer bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-violet-500/50 hover:bg-slate-900/80 transition group">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-400">Pilier 6</span>
+                            <i class="fa-solid fa-arrow-right text-slate-600 group-hover:text-violet-400 group-hover:translate-x-1 transition"></i>
+                        </div>
+                        <h4 class="font-bold text-white text-base mb-2">Variations & Optimisation</h4>
+                        <p class="text-xs text-slate-400">Génère 5 angles par prompt et évalue tes résultats en continu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PILIER 1 TAB -->
+        <div id="tab-pilier1" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Pilier 1</span>
+                <h2 class="text-2xl font-black text-white mt-1">Parler à l’IA avec Précision</h2>
+                <p class="text-slate-400 text-sm mt-1">Arrêter de lancer des demandes vagues à ChatGPT et construire un Bloc de Contexte ultra-précis.</p>
+            </div>
+
+            <!-- Framework de spécificité -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i>
+                    <span>Le Framework de Spécificité</span>
+                </h3>
+                <p class="text-xs text-slate-400">Remplace les demandes vagues par cette structure à 6 niveaux pour une précision maximale.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-indigo-400 font-bold block mb-1">SUJET</span>
+                        <p class="text-slate-300">Quoi exactement ? (Sujet précis)</p>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-indigo-400 font-bold block mb-1">AUDIENCE</span>
+                        <p class="text-slate-300">Pour qui ? (Niche & persona)</p>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-indigo-400 font-bold block mb-1">BÉNÉFICE</span>
+                        <p class="text-slate-300">Quel résultat/gain mis en avant ?</p>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-indigo-400 font-bold block mb-1">OBJECTION</span>
+                        <p class="text-slate-300">Quelle peur ou croyance traiter ?</p>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-indigo-400 font-bold block mb-1">TON</span>
+                        <p class="text-slate-300">Comment veux-tu le dire ?</p>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                        <span class="text-indigo-400 font-bold block mb-1">FORMAT</span>
+                        <p class="text-slate-300">Type de contenu & longueur exacte</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5 Erreurs à Éliminer -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+                    <span>Les 5 Erreurs Majeures à Éliminer</span>
+                </h3>
+                <div class="space-y-3 text-xs">
+                    <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-rose-400">Erreur 1 — Prompt trop vague</span> : "Écris-moi un post sur le marketing digital." ➔ L'IA ignore l'angle, l'audience et le ton.
+                    </div>
+                    <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-rose-400">Erreur 2 — Oublier le contexte</span> : Ne pas spécifier ta niche et ta promesse unique avant de solliciter des idées.
+                    </div>
+                    <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-rose-400">Erreur 3 — Ne donner aucun exemple</span> : Exige la méthode des 2 exemples minimum pour guider le style attendu.
+                    </div>
+                    <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-rose-400">Erreur 4 — Abandonner après la 1ère réponse</span> : Applique la règle des 3 itérations (1. Générer, 2. Affiner, 3. Variations).
+                    </div>
+                    <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-rose-400">Erreur 5 — Copier-coller sans humaniser</span> : Publier du texte IA brut sans y injecter ton vécu ou ton vocabulaire.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Context Block Generator -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-indigo-500/30 space-y-5 shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-id-card text-indigo-400"></i>
+                            <span>Générateur Interactif — Mon Bloc de Contexte Maître</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">Remplis ces champs pour générer ton bloc maître à copier dans tes conversations ChatGPT.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Ma Niche :</label>
+                        <input type="text" id="ctx-niche" placeholder="Ex: Coach business solopreneurs" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Ma Sous-Niche :</label>
+                        <input type="text" id="ctx-subniche" placeholder="Ex: Création de produits digitaux IA" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Mon Audience :</label>
+                        <input type="text" id="ctx-audience" placeholder="Ex: Entrepreneurs qui veulent se développer sans s'épuiser" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Problème Principal :</label>
+                        <input type="text" id="ctx-problem" placeholder="Ex: Manque de temps pour créer du contenu récurrent" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Ma Promesse Unique :</label>
+                        <input type="text" id="ctx-promise" placeholder="Ex: Structurer et créer leurs contenus 5x plus vite" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Mon Ton & Formats :</label>
+                        <input type="text" id="ctx-tone" placeholder="Ex: Inspirant, direct, tutoiement, Carrousels/LinkedIn" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 pt-2">
+                    <button onclick="generateContextBlock()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition flex items-center space-x-2 shadow-lg shadow-indigo-600/20">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Générer le Bloc de Contexte</span>
+                    </button>
+                    <button onclick="copyGeneratedContext()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition flex items-center space-x-2 border border-slate-700">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copier</span>
+                    </button>
+                </div>
+
+                <div class="relative">
+                    <textarea id="ctx-result" readonly rows="7" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-indigo-300 focus:outline-none custom-scrollbar" placeholder="Ton bloc de contexte s'affichera ici après clic sur Générer..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- PILIER 2 TAB -->
+        <div id="tab-pilier2" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Pilier 2</span>
+                <h2 class="text-2xl font-black text-white mt-1">Donner ta Voix à ChatGPT</h2>
+                <p class="text-slate-400 text-sm mt-1">Éviter que tes contenus ressemblent à des textes génériques interchangeables grâce à tes 5 marqueurs de personnalité.</p>
+            </div>
+
+            <!-- 5 Marqueurs de personnalité -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-fingerprint text-purple-400"></i>
+                    <span>Les 5 Marqueurs de Personnalité</span>
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-purple-400 block mb-1">1. Vocabulaire Unique</span>
+                        <p class="text-slate-300">Tes expressions fréquentes, anglicismes autorisés et la liste noire des mots banals à interdire.</p>
+                    </div>
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-purple-400 block mb-1">2. Analogies Personnelles</span>
+                        <p class="text-slate-300">Images concrètes issues de ton quotidien (ex: "Créer sans stratégie, c'est cuisiner sans recette").</p>
+                    </div>
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-purple-400 block mb-1">3. Niveau de Formalité</span>
+                        <p class="text-slate-300">Positionnement sur une échelle de 1 à 10 (Conversationnel ➔ Formel) et tutoiement/vouvoiement.</p>
+                    </div>
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                        <span class="font-bold text-purple-400 block mb-1">4. Références Culturelles</span>
+                        <p class="text-slate-300">Films, séries, livres ou situations entrepreneuriales comprises par ton audience.</p>
+                    </div>
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 col-span-1 md:col-span-2">
+                        <span class="font-bold text-purple-400 block mb-1">5. Structure des Phrases</span>
+                        <p class="text-slate-300">Rythme (phrases courtes punchy vs fluides), paragraphes aérés, fréquence des questions et ellipses.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Méta-prompt de style -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-code text-purple-400"></i>
+                        <span>Le Méta-Prompt d'Analyse de Style</span>
+                    </h3>
+                    <button onclick="copyPrompt('prompt-style')" class="px-4 py-2 bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white rounded-xl text-xs font-semibold transition border border-purple-500/30 flex items-center space-x-2">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copier</span>
+                    </button>
+                </div>
+                <p class="text-xs text-slate-400">Fournis 3 exemples de tes meilleurs textes à ChatGPT avec ce prompt pour qu'il génère ton Guide de Style Personnalisé.</p>
+                <div class="relative">
+                    <pre id="prompt-style" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap overflow-x-auto custom-scrollbar">Tu es un expert en analyse de voix et style d'écriture.
+
+Voici 3 exemples de mon contenu:
+
+EXEMPLE 1:
+[Colle un de tes posts]
+
+EXEMPLE 2:
+[Colle un autre post]
+
+EXEMPLE 3:
+[Colle un troisième post]
+
+Analyse ma voix et mon style, puis crée-moi un "Guide de Style Personnel" avec:
+
+1. VOCABULAIRE RÉCURRENT
+→ Liste les mots/expressions que j'utilise le plus
+→ Note les mots que je n'utilise jamais
+
+2. TON ET FORMALITÉ
+→ Décris mon niveau de formalité (1-10)
+→ Note si je tutoie ou vouvoie
+→ Identifie mon ton général (direct/amical/expert/etc.)
+
+3. STRUCTURE DE PHRASES
+→ Longueur moyenne de mes phrases
+→ Mon utilisation de ponctuation
+→ Mes patterns d'écriture
+
+4. MARQUEURS STYLISTIQUES
+→ Mes analogies préférées
+→ Mes références culturelles
+→ Mes tics de langage positifs
+
+5. INSTRUCTIONS POUR L'IA
+→ Crée-moi un paragraphe que je peux ajouter à mes futurs prompts pour que l'IA écrive exactement comme MOI
+
+Format: Clair, actionnable, prêt à copier-coller.</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- PILIER 3 TAB -->
+        <div id="tab-pilier3" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-pink-400 uppercase tracking-wider">Pilier 3</span>
+                <h2 class="text-2xl font-black text-white mt-1">Capter l’Attention et Raconter</h2>
+                <p class="text-slate-400 text-sm mt-1">Créer des débuts de contenus qui captivent immédiatement puis structurer avec du Storytelling authentique.</p>
+            </div>
+
+            <!-- Prompt 1: Hooks -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-magnet text-pink-400"></i>
+                        <span>Prompt 1 — Générateur de 10 Hooks (5 Familles)</span>
+                    </h3>
+                    <button onclick="copyPrompt('prompt-hook')" class="px-4 py-2 bg-pink-600/20 hover:bg-pink-600 text-pink-300 hover:text-white rounded-xl text-xs font-semibold transition border border-pink-500/30 flex items-center space-x-2">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copier</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <pre id="prompt-hook" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap overflow-x-auto custom-scrollbar">Tu es un expert en création de hooks viraux. Voici mon sujet: [TON SUJET]
+Mon audience cible: [DÉCRIS TON AUDIENCE EN 1 PHRASE]
+
+Génère-moi 10 hooks différents qui arrêtent le scroll, en utilisant ces 5 patterns psychologiques:
+
+1. LA CURIOSITÉ
+Pattern: "Ce que personne ne te dit sur [SUJET]..."
+Exemple: "Ce que personne ne te dit sur l'algorithme Instagram en 2025..."
+
+2. LA CONTROVERSE
+Pattern: "Arrête de [ACTION COMMUNE], voici pourquoi..."
+Exemple: "Arrête de poster tous les jours, voici pourquoi ça tue ton engagement..."
+
+3. LE RÉSULTAT CHOQUANT
+Pattern: "J'ai [RÉSULTAT IMPRESSIONNANT] en [TEMPS COURT]..."
+Exemple: "J'ai gagné 25k€ en 30 jours avec une audience de 500 personnes..."
+
+4. LE SECRET D'INITIÉS
+Pattern: "Les [EXPERTS] ne veulent pas que tu saches [SECRET]..."
+Exemple: "Les agences marketing ne veulent pas que tu saches cette technique gratuite..."
+
+5. L'HISTOIRE PERSONNELLE
+Pattern: "Il y a [TEMPS], j'étais [SITUATION NÉGATIVE]... maintenant [TRANSFORMATION]"
+Exemple: "Il y a 6 mois, j'étais fauché et sans audience... maintenant je fais 10k/mois"
+
+Pour chaque hook:
+- Garde-le entre 10-18 mots maximum
+- Utilise des chiffres spécifiques quand possible
+- Crée un "gap de curiosité" (ils DOIVENT lire la suite)
+- Adapte le ton à mon audience
+
+Format: Présente les 10 hooks numérotés, puis explique en 1 ligne pourquoi chacun fonctionne psychologiquement.</pre>
+                </div>
+            </div>
+
+            <!-- Prompt 2: Storytelling -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-book-open text-amber-400"></i>
+                        <span>Prompt 2 — Générateur d'Histoire (Structure H-B-C-R-C)</span>
+                    </h3>
+                    <button onclick="copyPrompt('prompt-story')" class="px-4 py-2 bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-white rounded-xl text-xs font-semibold transition border border-amber-500/30 flex items-center space-x-2">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copier</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <pre id="prompt-story" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap overflow-x-auto custom-scrollbar">Tu es un expert storyteller qui crée des stories captivantes et engageantes.
+
+Contexte:
+- Mon expérience/histoire: [DÉCRIS TON EXPÉRIENCE EN 2-3 PHRASES]
+- Mon audience: [DÉCRIS TON AUDIENCE]
+- Ce que je veux qu'ils fassent après avoir lu: [TON CTA/OBJECTIF]
+
+Crée une story captivante en utilisant ce framework éprouvé:
+
+1. HOOK (1-2 phrases)
+→ Ouvre avec un moment dramatique, un résultat surprenant, ou une question qui arrête le scroll
+→ Donne envie de lire la suite IMMÉDIATEMENT
+
+2. BACKGROUND (2-3 phrases)
+→ Donne le contexte de l'histoire
+→ Rends-toi relatable (ton audience doit se voir dans ta situation)
+→ Plante le décor sans donner toute l'histoire
+
+3. CONFLICT (3-4 phrases)
+→ Présente le problème/challenge que tu as rencontré
+→ Amplifie l'émotion (frustration, peur, doute)
+→ Ton audience doit ressentir la difficulté avec toi
+
+4. RESOLUTION (3-4 phrases)
+→ Comment tu as résolu le problème
+→ La leçon clé que tu as apprise
+→ Le résultat/transformation obtenu
+
+5. CALL TO ACTION (1-2 phrases)
+→ Action simple et claire
+→ Lien naturel avec l'histoire
+→ Pas de "vente agressive", juste une invitation
+
+RÈGLES D'ÉCRITURE:
+- Ton conversationnel et authentique (parle comme tu parles vraiment)
+- Phrases courtes et punchy
+- Pas de jargon complexe
+- Utilise "Je" et "Tu" pour créer la proximité
+- Maximum 300 mots au total
+
+Génère l'histoire complète maintenant.</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- PILIER 4 TAB -->
+        <div id="tab-pilier4" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Pilier 4</span>
+                <h2 class="text-2xl font-black text-white mt-1">Produire le Bon Format avec le Bon Prompt</h2>
+                <p class="text-slate-400 text-sm mt-1">Adapter le message aux contraintes de lecture et de consommation uniques de chaque plateforme.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Prompt 3 - Carrousel -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                            <i class="fa-solid fa-images text-emerald-400"></i>
+                            <span>Prompt 3 — Système de Carrousel (10 Slides)</span>
+                        </h3>
+                        <button onclick="copyPrompt('prompt-carrousel')" class="p-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white rounded-xl text-xs font-semibold transition border border-emerald-500/30">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre id="prompt-carrousel" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap h-56 overflow-y-auto custom-scrollbar">Tu es un expert en création de carrousels viraux pour Instagram et LinkedIn.
+
+Sujet de mon carrousel: [TON SUJET]
+Audience cible: [TON AUDIENCE]
+Objectif: [Éduquer / Inspirer / Vendre / Positionner mon expertise]
+
+Crée un carrousel de 10 slides avec cette structure:
+
+SLIDE 1 - LE HOOK
+→ Titre accrocheur (6-8 mots maximum)
+→ Promesse claire de ce qu'ils vont apprendre
+→ Doit donner envie de swiper immédiatement
+
+SLIDES 2-9 - LE CONTENU (1 idée par slide)
+→ Chaque slide = 1 point clé unique
+→ Titre court (3-5 mots)
+→ Contenu: 2-3 lignes maximum
+→ Format scannable et impactant
+→ Utilise des chiffres quand possible
+
+SLIDE 10 - LA CONCLUSION & CTA
+→ Récap rapide (ce qu'ils viennent d'apprendre)
+→ Call-to-action clair
+→ Invitation à suivre / sauvegarder / commenter
+
+RÈGLES DE CRÉATION:
+- Chaque slide doit tenir en 15-20 mots MAX
+- Utilise des émojis stratégiquement (1-2 par slide)
+- Ton direct et conversationnel
+- Évite le jargon complexe
+- Crée un "flow" logique entre les slides
+
+FORMAT DE SORTIE:
+Pour chaque slide, donne-moi:
+- Le numéro du slide
+- Le titre
+- Le contenu exact (prêt à copier-coller)
+- (Optionnel) Suggestion visuelle simple
+
+Génère le carrousel complet maintenant.</pre>
+                </div>
+
+                <!-- Prompt 4 - Script Vidéo Court -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                            <i class="fa-solid fa-video text-rose-400"></i>
+                            <span>Prompt 4 — Script Vidéo Courte (Reels/TikTok/Shorts)</span>
+                        </h3>
+                        <button onclick="copyPrompt('prompt-video')" class="p-2 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-xl text-xs font-semibold transition border border-rose-500/30">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre id="prompt-video" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap h-56 overflow-y-auto custom-scrollbar">Tu es un expert en création de vidéos courtes virales (Reels Instagram, TikTok, YouTube Shorts).
+
+Sujet de ma vidéo: [TON SUJET]
+Durée cible: [15 / 30 / 60 secondes]
+Objectif: [Éduquer / Divertir / Vendre / Inspirer]
+
+Crée un script vidéo complet avec cette structure optimisée pour la rétention:
+
+SECONDES 0-3: LE HOOK VISUEL + AUDIO
+→ Ce que je montre visuellement (action, texte à l'écran, mouvement)
+→ Ce que je dis (première phrase DOIT arrêter le scroll)
+→ Pourquoi ça capte l'attention
+
+SECONDES 4-45: LE CONTENU PRINCIPAL
+→ Divise en 2-3 points clés maximum
+→ Pour chaque point:
+  - Ce que je dis (mot à mot)
+  - Ce que je montre visuellement
+  - Transitions/cuts suggérés
+→ Pas de temps mort, chaque seconde compte
+
+SECONDES 46-60: LE RECAP + CTA
+→ Résumé ultra-rapide
+→ Call to action clair
+→ Hook final pour encourager le re-watch
+
+RÈGLES D'ÉCRITURE:
+- Phrases courtes et punchy
+- Ton conversationnel et énergique
+- Évite les "euh", "donc", "voilà"
+- Utilise des chiffres et des faits spécifiques
+- Crée des "open loops" pour garder l'attention
+
+FORMAT DE SORTIE:
+Pour chaque segment de temps:
+- Timing exact (ex: 0:00-0:03)
+- Script audio (ce que je dis, mot à mot)
+- Indications visuelles (ce que la caméra montre)
+- Notes de réalisation (transitions, cuts, texte à l'écran)
+
+Génère le script complet maintenant.</pre>
+                </div>
+
+                <!-- Prompt 5 - Thread / X -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                            <i class="fa-brands fa-x-twitter text-sky-400"></i>
+                            <span>Prompt 5 — Thread / X (8 Posts)</span>
+                        </h3>
+                        <button onclick="copyPrompt('prompt-thread')" class="p-2 bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white rounded-xl text-xs font-semibold transition border border-sky-500/30">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre id="prompt-thread" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap h-56 overflow-y-auto custom-scrollbar">Tu es un expert en threads Twitter/X viraux qui génèrent engagement et autorité.
+
+Mon sujet: [TON SUJET]
+Mon objectif: [Éduquer / Partager une histoire / Positionner mon expertise / Vendre]
+Ma niche: [TA NICHE]
+
+Crée un thread Twitter/X de 8 tweets avec cette structure:
+
+TWEET 1 - LE HOOK (280 caractères max)
+→ Ouvre avec un teaser puissant
+→ Promesse claire de ce qui suit
+→ Utilise un chiffre ou un fait choquant si possible
+→ Finis avec "Un thread 🧵" ou "Thread 👇"
+
+TWEETS 2-7 - LE CONTENU (1 idée par tweet)
+→ Chaque tweet = 1 point clé unique
+→ Commence chaque tweet par un "hook" court
+→ 2-3 phrases courtes par tweet
+→ Chaque tweet doit pouvoir être retweeté seul
+→ Utilise des sauts de ligne pour l'aération
+
+TWEET 8 - LA CONCLUSION + CTA
+→ Récap ultra-rapide
+→ CTA clair (follow, RT, bookmark, lien)
+→ Personnalisation ("Si ce thread t'a aidé...")
+
+RÈGLES D'ÉCRITURE TWITTER:
+- Maximum 280 caractères par tweet
+- Phrases ultra-courtes et impactantes
+- Sauts de ligne stratégiques (aération visuelle)
+- Émojis: 1-2 maximum par tweet
+- Chiffres et listes (Twitter adore ça)
+- Ton direct: "Tu", "Toi", "Ta"
+
+FORMAT DE SORTIE:
+Numéro de tweet + contenu exact (prêt à copier-coller)
+Sépare chaque tweet par "---"
+
+Génère le thread complet maintenant.</pre>
+                </div>
+
+                <!-- Prompt 6 - Post LinkedIn -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                            <i class="fa-brands fa-linkedin text-blue-400"></i>
+                            <span>Prompt 6 — Post LinkedIn Pro</span>
+                        </h3>
+                        <button onclick="copyPrompt('prompt-linkedin')" class="p-2 bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white rounded-xl text-xs font-semibold transition border border-blue-500/30">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre id="prompt-linkedin" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap h-56 overflow-y-auto custom-scrollbar">Tu es un expert en contenu LinkedIn viral qui génère engagement et crédibilité professionnelle.
+
+Mon sujet: [TON SUJET]
+Mon secteur/industrie: [TON SECTEUR]
+Mon objectif: [Positionner mon expertise / Générer des leads / Partager une leçon / Inspirer]
+
+Crée un post LinkedIn avec cette structure optimisée:
+
+LIGNE 1-2: LE HOOK (70 caractères max avant le "voir plus")
+→ Phrase d'ouverture qui arrête le scroll
+→ Doit donner envie de cliquer "voir plus"
+→ Question provocante OU affirmation contre-intuitive OU résultat choquant
+
+CORPS DU POST (1000-1200 caractères):
+Option A - STRUCTURE STORY (si histoire personnelle):
+1. Le contexte (2-3 lignes)
+2. Le problème/challenge (3-4 lignes)
+3. La leçon apprise (3-4 lignes)
+4. L'application pratique (2-3 lignes)
+
+Option B - STRUCTURE INSIGHT (si expertise/analyse):
+1. L'observation/tendance (2-3 lignes)
+2. Pourquoi c'est important (3-4 lignes)
+3. Les implications pratiques (3-4 lignes)
+4. Le takeaway actionable (2-3 lignes)
+
+CONCLUSION (2-3 lignes):
+→ Résumé de la leçon clé
+→ Question pour l'engagement
+→ Invitation naturelle au dialogue
+
+RÈGLES D'ÉCRITURE LINKEDIN:
+- Ton: Professionnel mais authentique (humain, pas corporate)
+- Paragraphes courts (2-3 lignes max par paragraphe)
+- Sauts de ligne stratégiques (aération visuelle)
+- Pas de jargon inutile ou buzzwords vides
+- Utilise "Je" et "Vous" pour créer connexion
+- Émojis: 2-3 maximum, utilisés stratégiquement
+- Longueur: 1200-1500 caractères (sweet spot algo)
+
+FORMAT DE SORTIE:
+Donne-moi le post complet, prêt à copier-coller sur LinkedIn.
+
+Génère le post maintenant.</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- PILIER 5 TAB -->
+        <div id="tab-pilier5" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Pilier 5</span>
+                <h2 class="text-2xl font-black text-white mt-1">Transforme 1 Contenu en 10 Formats</h2>
+                <p class="text-slate-400 text-sm mt-1">Arrêter de repartir de zéro : décliner stratégiquement ton contenu pilier sur tous tes canaux.</p>
+            </div>
+
+            <!-- Prompt 7: Machine de Réutilisation -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-arrows-spin text-cyan-400"></i>
+                        <span>Prompt 7 — La Machine de Réutilisation 1 → 10</span>
+                    </h3>
+                    <button onclick="copyPrompt('prompt-reutilisation')" class="px-4 py-2 bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white rounded-xl text-xs font-semibold transition border border-cyan-500/30 flex items-center space-x-2">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copier</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <pre id="prompt-reutilisation" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap overflow-x-auto custom-scrollbar">Tu es un expert en content repurposing stratégique et distribution omnicanale.
+
+Mon contenu original:
+[COLLE TON CONTENU COMPLET ICI - Post, article, vidéo script, etc.]
+
+Plateforme d'origine: [Instagram / LinkedIn / YouTube / Blog / etc.]
+
+Transforme ce contenu en 10 formats différents, chacun adapté à sa plateforme cible:
+
+FORMAT 1 - THREAD TWITTER/X (8 tweets)
+→ Structure: Hook + 6 points + CTA
+→ Ton: Direct et punchy
+→ Max 280 caractères par tweet
+
+FORMAT 2 - CARROUSEL INSTAGRAM (10 slides)
+→ Structure: Slide 1 hook + 8 slides contenu + 1 slide conclusion
+→ Titres courts + contenu scannable
+→ Max 20 mots par slide
+
+FORMAT 3 - POST LINKEDIN (Format long)
+→ Structure: Hook 2 lignes + Corps + Conclusion + Question
+→ Ton: Professionnel mais authentique
+→ 1200-1500 caractères
+
+FORMAT 4 - SCRIPT REEL/TIKTOK (30 secondes)
+→ Structure: 0-3 sec hook + 4-25 sec contenu + 26-30 sec CTA
+→ Script mot à mot + indications visuelles
+→ Énergique et rapide
+
+FORMAT 5 - EMAIL NEWSLETTER (300 mots)
+→ Structure: Objet accrocheur + Introduction + Corps + PS
+→ Ton: Conversationnel et intime
+→ 1 CTA clair
+
+FORMAT 6 - STORY INSTAGRAM (5 frames)
+→ Structure: 5 slides avec texte court + visuel simple
+→ Chaque frame = 1 point clé
+→ Max 10 mots par frame
+
+FORMAT 7 - CAPTION INSTAGRAM (Format court)
+→ Structure: Hook fort + 3-4 lignes de contenu + CTA
+→ Émojis stratégiques
+→ 150-200 mots max
+
+FORMAT 8 - POST FACEBOOK (Format conversationnel)
+→ Structure: Hook relatable + Story courte + CTA
+→ Ton: Amical et accessible
+→ 200-300 mots
+
+FORMAT 9 - SCRIPT YOUTUBE SHORT (60 secondes)
+→ Structure: 0-5 sec hook + 6-50 sec contenu + 51-60 sec CTA
+→ Script détaillé + notes visuelles
+→ Plus d'explications que Reel
+
+FORMAT 10 - PIN PINTEREST (Description optimisée)
+→ Titre: 100 caractères max
+→ Description: 400-500 caractères
+→ Mots-clés SEO inclus
+→ CTA clair avec lien
+
+RÈGLES IMPORTANTES:
+- Chaque format doit être ADAPTÉ, pas juste copié-collé
+- Respecte le ton et les codes de chaque plateforme
+- Optimise pour l'algorithme spécifique
+- Garde le message core mais change l'angle si nécessaire
+
+FORMAT DE SORTIE:
+Pour chaque format, donne-moi:
+- Le numéro et nom du format
+- Le contenu complet, prêt à copier-coller
+- (Optionnel) Notes sur timing de publication optimal
+
+Génère les 10 formats maintenant.</pre>
+                </div>
+            </div>
+
+            <!-- Calendrier de distribution -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-regular fa-calendar-days text-cyan-400"></i>
+                    <span>Modèle de Calendrier de Distribution (2 Semaines)</span>
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <span class="font-bold text-cyan-400 uppercase">Semaine 1</span>
+                        <ul class="space-y-1.5 text-slate-300">
+                            <li><strong>J1 :</strong> Publication du contenu pilier original</li>
+                            <li><strong>J2 :</strong> Thread / X (Angle direct et séquencé)</li>
+                            <li><strong>J3 :</strong> Carrousel Instagram (Version visuelle scannable)</li>
+                            <li><strong>J4 :</strong> Reel / Vidéo courte (Hook visuel + idée clé)</li>
+                            <li><strong>J5 :</strong> Newsletter (Format intime avec storytelling)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <span class="font-bold text-cyan-400 uppercase">Semaine 2</span>
+                        <ul class="space-y-1.5 text-slate-300">
+                            <li><strong>J8 :</strong> TikTok (Rythme vif et décontracté)</li>
+                            <li><strong>J9 :</strong> YouTube Short (Un peu plus de contexte)</li>
+                            <li><strong>J10 :</strong> Post Facebook (Angle conversationnel)</li>
+                            <li><strong>J11 :</strong> Stories Instagram (5 frames interactives)</li>
+                            <li><strong>J12 :</strong> Pin Pinterest (Recherche et mots-clés)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PILIER 6 TAB -->
+        <div id="tab-pilier6" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-violet-400 uppercase tracking-wider">Pilier 6</span>
+                <h2 class="text-2xl font-black text-white mt-1">Tester, Vérifier et Optimiser</h2>
+                <p class="text-slate-400 text-sm mt-1">Ne plus considérer un prompt comme figé : tester plusieurs variations et valider la qualité avant de publier.</p>
+            </div>
+
+            <!-- Générateur de variations de prompt -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-vial text-violet-400"></i>
+                        <span>Le Prompt des Prompts — Générateur de Variations</span>
+                    </h3>
+                    <button onclick="copyPrompt('prompt-variations')" class="px-4 py-2 bg-violet-600/20 hover:bg-violet-600 text-violet-300 hover:text-white rounded-xl text-xs font-semibold transition border border-violet-500/30 flex items-center space-x-2">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copier</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <pre id="prompt-variations" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap overflow-x-auto custom-scrollbar">Tu es un expert en création et optimisation de prompts IA.
+
+Prends ce prompt de base:
+[COLLE UN DES 7 PROMPTS DU MODULE 2]
+
+Génère-moi 5 variations de ce prompt qui:
+
+1. GARDENT LA MÊME STRUCTURE
+→ Le framework de base doit rester intact
+→ Les éléments clés sont préservés
+
+2. AJOUTENT DES ANGLES DIFFÉRENTS
+→ Variation 1: Focus sur un débutant absolu
+→ Variation 2: Focus sur un expert qui veut scaler
+→ Variation 3: Focus sur une niche spécifique [précise laquelle]
+→ Variation 4: Focus sur un format plus court/rapide
+→ Variation 5: Focus sur un objectif différent [vendre vs éduquer vs inspirer]
+
+3. S'ADAPTENT À DIFFÉRENTS CONTEXTES
+→ Chaque variation doit être prête à l'emploi
+→ Indique QUAND utiliser chaque variation
+
+4. OPTIMISENT POUR DIFFÉRENTS RÉSULTATS
+→ Variation orientée viralité
+→ Variation orientée conversion
+→ Variation orientée autorité
+→ Variation orientée engagement
+→ Variation orientée SEO/découvrabilité
+
+Pour chaque variation:
+- Donne le prompt complet
+- Explique quand l'utiliser (1-2 lignes)
+- Note les différences clés vs le prompt original
+
+FORMAT: Numéro + Nom de variation + Prompt + Quand utiliser
+
+Génère les 5 variations maintenant.</pre>
+                </div>
+            </div>
+
+            <!-- Checklist d'humanisation 5 points -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-user-check text-violet-400"></i>
+                    <span>Checklist d'Humanisation en 5 Points</span>
+                </h3>
+                <div class="space-y-2 text-xs">
+                    <label class="flex items-center space-x-3 p-3 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
+                        <input type="checkbox" onchange="updateHumanScore()" class="chk-human rounded bg-slate-900 border-slate-700 text-violet-600 focus:ring-0 w-4 h-4">
+                        <span class="text-slate-300">1. Une touche personnelle est-elle présente (détail vécu, opinion, exemple réel) ?</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
+                        <input type="checkbox" onchange="updateHumanScore()" class="chk-human rounded bg-slate-900 border-slate-700 text-violet-600 focus:ring-0 w-4 h-4">
+                        <span class="text-slate-300">2. As-tu remplacé les mots génériques par ton vocabulaire habituel ?</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
+                        <input type="checkbox" onchange="updateHumanScore()" class="chk-human rounded bg-slate-900 border-slate-700 text-violet-600 focus:ring-0 w-4 h-4">
+                        <span class="text-slate-300">3. As-tu supprimé le jargon inutile ou artificiel ?</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
+                        <input type="checkbox" onchange="updateHumanScore()" class="chk-human rounded bg-slate-900 border-slate-700 text-violet-600 focus:ring-0 w-4 h-4">
+                        <span class="text-slate-300">4. As-tu créé une interaction explicite avec le lecteur (question/réflexion) ?</span>
+                    </label>
+                    <label class="flex items-center space-x-3 p-3 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
+                        <input type="checkbox" onchange="updateHumanScore()" class="chk-human rounded bg-slate-900 border-slate-700 text-violet-600 focus:ring-0 w-4 h-4">
+                        <span class="text-slate-300">5. L'émotion transmise est-elle juste et sans dramatisation exagérée ?</span>
+                    </label>
+                </div>
+                <div id="human-score-badge" class="p-3 bg-slate-950 rounded-xl text-center text-xs font-bold text-slate-400 border border-slate-800">
+                    Score Humanisation : 0 / 5
+                </div>
+            </div>
+        </div>
+
+        <!-- PROMPTS LIBRARY TAB -->
+        <div id="tab-prompts" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Boîte à Outils</span>
+                <h2 class="text-2xl font-black text-white mt-1">Bibliothèque Complète des 7 Prompts Majeurs</h2>
+                <p class="text-slate-400 text-sm mt-1">Retrouve et copie en un clic tous les prompts maîtres de la méthode PERC.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold px-2.5 py-1 bg-pink-500/10 text-pink-400 rounded-md">Prompt 1</span>
+                        <button onclick="copyPrompt('prompt-hook')" class="text-xs text-indigo-400 hover:underline">Copier le prompt</button>
+                    </div>
+                    <h4 class="font-bold text-white text-sm">Générateur de 10 Hooks</h4>
+                    <p class="text-xs text-slate-400">Génère 10 accroches réparties dans les 5 familles (Curiosité, Contraste, Résultat, Angle, Histoire).</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-md">Prompt 2</span>
+                        <button onclick="copyPrompt('prompt-story')" class="text-xs text-indigo-400 hover:underline">Copier le prompt</button>
+                    </div>
+                    <h4 class="font-bold text-white text-sm">Créateur d'Histoires</h4>
+                    <p class="text-xs text-slate-400">Transforme une expérience vécue en storytelling structuré (Hook ➔ Background ➔ Conflict ➔ Resolution ➔ CTA).</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-md">Prompt 3</span>
+                        <button onclick="copyPrompt('prompt-carrousel')" class="text-xs text-indigo-400 hover:underline">Copier le prompt</button>
+                    </div>
+                    <h4 class="font-bold text-white text-sm">Système de Carrousel (10 Slides)</h4>
+                    <p class="text-xs text-slate-400">Structure un carrousel optimisé slide par slide pour Instagram et LinkedIn.</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold px-2.5 py-1 bg-rose-500/10 text-rose-400 rounded-md">Prompt 4</span>
+                        <button onclick="copyPrompt('prompt-video')" class="text-xs text-indigo-400 hover:underline">Copier le prompt</button>
+                    </div>
+                    <h4 class="font-bold text-white text-sm">Script Vidéo Courte</h4>
+                    <p class="text-xs text-slate-400">Rédige un script court mot-à-mot avec timming, indications visuelles et hook 0-3 secondes.</p>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold px-2.5 py-1 bg-sky-500/10 text-sky-400 rounded-md">Prompt 5</span>
+                        <button onclick="copyPrompt('prompt-thread')" class="text-xs text-indigo-400 hover:underline">Copier le prompt</button>
+                    </div>
+                    <h4 class="font-bold text-white text-sm">Thread / X (8 Posts)</h4>
+                    <p class="text-xs text-slate-400">Découpe une méthode en une série de publications autonomes et séquencées.</p>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold px-2.5 py-1 bg-blue-500/10 text-blue-400 rounded-md">Prompt 6</span>
+                        <button onclick="copyPrompt('prompt-linkedin')" class="text-xs text-indigo-400 hover:underline">Copier le prompt</button>
+                    </div>
+                    <h4 class="font-bold text-white text-sm">Post LinkedIn Professionnel</h4>
+                    <p class="text-xs text-slate-400">Rédige un contenu B2B structuré avec accroche intrigante et ouverture de discussion.</p>
+                </div>
+
+                <!-- Card 7 -->
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3 col-span-1 md:col-span-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold px-2.5 py-1 bg-cyan-500/10 text-cyan-400 rounded-md">Prompt 7</span>
+                        <button onclick="copyPrompt('prompt-reutilisation')" class="text-xs text-indigo-400 hover:underline">Copier le prompt</button>
+                    </div>
+                    <h4 class="font-bold text-white text-sm">Machine de Réutilisation 1 → 10</h4>
+                    <p class="text-xs text-slate-400">Prend 1 seul contenu original et génère 10 déclinaisons prêtes à l'emploi sur 10 canaux différents.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHECKLIST & SCORE /10 TAB -->
+        <div id="tab-checker" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Outil de Validation</span>
+                <h2 class="text-2xl font-black text-white mt-1">Checklist 10 Points & Score Avant Publication</h2>
+                <p class="text-slate-400 text-sm mt-1">Coche chaque critère validé dans ton contenu pour calculer dynamiquement ton score de qualité.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Checkboxes -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Section 1 -->
+                    <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">SECTION 1 — L'ACCROCHE</h4>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">1. Les premières secondes / lignes captent l'attention (chiffre réel, question, contraste) ?</span>
+                        </label>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">2. Écart de curiosité présent (suffisamment de curiosité sans tromper le lecteur) ?</span>
+                        </label>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">3. Rupture de schéma (opinion nuancée, méthode différente, idée contre-intuitive) ?</span>
+                        </label>
+                    </div>
+
+                    <!-- Section 2 -->
+                    <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider">SECTION 2 — LE CONTENU</h4>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">4. Présence d'un exemple concret ou d'une expérience vécue (pas uniquement de la théorie) ?</span>
+                        </label>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">5. La valeur est-elle immédiatement actionnable par le lecteur ?</span>
+                        </label>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">6. La longueur est-elle adaptée à la plateforme et à l'attention demandée ?</span>
+                        </label>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">7. Le contenu est-il facilement scannable (paragraphes courts, puces, espaces) ?</span>
+                        </label>
+                    </div>
+
+                    <!-- Section 3 -->
+                    <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">SECTION 3 — L'ENGAGEMENT</h4>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">8. Y a-t-il un appel à l'action (CTA) principal unique et explicite ?</span>
+                        </label>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">9. La fin ouvre-t-elle naturellement la discussion ou la réponse du lecteur ?</span>
+                        </label>
+                        <label class="flex items-start space-x-3 p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 cursor-pointer hover:bg-slate-800/40 transition">
+                            <input type="checkbox" onchange="calculateScore()" class="chk-score mt-1 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 w-4 h-4">
+                            <span class="text-xs text-slate-300">10. La toute première ligne est-elle optimisée pour donner envie d'ouvrir la suite ?</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Live Score Card -->
+                <div>
+                    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 sticky top-28 text-center space-y-5 shadow-2xl">
+                        <h3 class="text-base font-bold text-white">Score Avant Publication</h3>
+                        <div class="w-36 h-36 mx-auto rounded-full bg-slate-950 border-4 border-slate-800 flex flex-col items-center justify-center relative">
+                            <span id="score-display" class="text-4xl font-black text-slate-500">0</span>
+                            <span class="text-xs text-slate-500 font-semibold">sur 10</span>
+                        </div>
+                        <div id="score-recommendation" class="p-3.5 bg-slate-950 rounded-xl text-xs text-slate-400 border border-slate-800 leading-relaxed">
+                            Coche les critères ci-contre pour évaluer la qualité de ton contenu.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAN 30 JOURS TAB -->
+        <div id="tab-plan30" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Plan de Démarrage</span>
+                <h2 class="text-2xl font-black text-white mt-1">Plan d'Action sur 30 Jours</h2>
+                <p class="text-slate-400 text-sm mt-1">Coche chaque étape au fur et à mesure de ta progression hebdomadaire.</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-2">
+                <div class="flex justify-between text-xs font-bold">
+                    <span class="text-slate-300">Progression globale</span>
+                    <span id="plan-progress-percent" class="text-amber-400">0%</span>
+                </div>
+                <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                    <div id="plan-progress-bar" class="h-full bg-gradient-to-r from-amber-500 to-indigo-500 w-0 transition-all duration-500"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                <!-- Semaine 1 -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">S1</span>
+                        <h3 class="font-bold text-white text-sm">Semaine 1 — Maîtriser les Hooks</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-indigo-500 focus:ring-0">
+                            <span class="text-slate-300">Utiliser le Prompt 1 et générer 10 hooks</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-indigo-500 focus:ring-0">
+                            <span class="text-slate-300">Sélectionner les 3 plus pertinents & publier</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-indigo-500 focus:ring-0">
+                            <span class="text-slate-300">Inaugurer ton Swipe File personnel</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Semaine 2 -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">S2</span>
+                        <h3 class="font-bold text-white text-sm">Semaine 2 — Storytelling & Carrousel</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-purple-500 focus:ring-0">
+                            <span class="text-slate-300">Transformer 1 expérience avec le Prompt 2 (Story)</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-purple-500 focus:ring-0">
+                            <span class="text-slate-300">Créer un carrousel 10 slides avec le Prompt 3</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-purple-500 focus:ring-0">
+                            <span class="text-slate-300">Comparer les retours et enregistrements</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Semaine 3 -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">S3</span>
+                        <h3 class="font-bold text-white text-sm">Semaine 3 — Vidéo Courte</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-rose-500 focus:ring-0">
+                            <span class="text-slate-300">Générer 5 scripts courts avec le Prompt 4</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-rose-500 focus:ring-0">
+                            <span class="text-slate-300">Produire et publier 1 vidéo (Reel / TikTok)</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-rose-500 focus:ring-0">
+                            <span class="text-slate-300">Mesurer le taux de rétention</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Semaine 4 -->
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">S4</span>
+                        <h3 class="font-bold text-white text-sm">Semaine 4 — Distribution 1 → 10</h3>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0">
+                            <span class="text-slate-300">Sélectionner ton meilleur contenu du mois</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0">
+                            <span class="text-slate-300">Exécuter le Prompt 7 de réutilisation</span>
+                        </label>
+                        <label class="flex items-center space-x-2.5 p-2 bg-slate-950 rounded-lg cursor-pointer">
+                            <input type="checkbox" onchange="updatePlanProgress()" class="chk-plan rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0">
+                            <span class="text-slate-300">Planifier la diffusion sur 2 semaines</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANNEXES & TEMPLATES TAB -->
+        <div id="tab-annexes" class="tab-content hidden space-y-8">
+            <div class="border-b border-slate-800 pb-5">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ressources</span>
+                <h2 class="text-2xl font-black text-white mt-1">Annexes & Templates Prêts à l'Emploi</h2>
+                <p class="text-slate-400 text-sm mt-1">Fiches express, modèles universels et garde-fous de sécurité.</p>
+            </div>
+
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-file-lines text-indigo-400"></i>
+                        <span>Template Universel pour Prompting IA</span>
+                    </h3>
+                    <button onclick="copyPrompt('template-universel')" class="px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white rounded-xl text-xs font-semibold transition border border-indigo-500/30 flex items-center space-x-2">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copier</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <pre id="template-universel" class="bg-slate-950 p-4 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 whitespace-pre-wrap overflow-x-auto custom-scrollbar">CONTEXTE
+Ma niche : [À COMPLÉTER]
+Mon audience : [À COMPLÉTER]
+Ma promesse : [À COMPLÉTER]
+Mon objectif : [À COMPLÉTER]
+
+SUJET
+[À COMPLÉTER]
+
+FORMAT
+[À COMPLÉTER]
+
+STYLE
+Ton : [À COMPLÉTER]
+Vocabulaire : [À COMPLÉTER]
+Structure : [À COMPLÉTER]
+
+À ÉVITER
+[À COMPLÉTER]
+
+RÈGLES
+N’invente aucune donnée, aucun témoignage ni expérience personnelle.
+Si une information manque, indique-le. Propose plusieurs versions si cela améliore le résultat.</pre>
+                </div>
+            </div>
+
+            <!-- Interdictions IA -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-rose-500/30 space-y-3">
+                <h3 class="text-base font-bold text-rose-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Règle d'Or — Ce que l'IA ne doit JAMAIS inventer</span>
+                </h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Pour protéger ta crédibilité, n'autorise jamais ChatGPT à fabriquer : témoignages, noms de clients, revenus, statistiques, études fictives, caractéristiques produit non vérifiées ou fausses preuves d'expérience.
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Navigation Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('search-results-panel').classList.add('hidden');
+            
+            const targetTab = document.getElementById('tab-' + tabId);
+            if(targetTab) targetTab.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
+                el.classList.add('text-slate-400');
+            });
+
+            const activeNav = document.getElementById('nav-' + tabId);
+            if(activeNav) {
+                activeNav.classList.remove('text-slate-400');
+                activeNav.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-600/20');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Toast Notification System
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        // Copy Text Helper
+        function copyPrompt(elementId) {
+            const el = document.getElementById(elementId);
+            if(!el) return;
+            const text = el.innerText;
+            
+            // Execute Copy Command
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast("Prompt copié dans le presse-papier !");
+            } catch (err) {
+                console.error("Échec de la copie", err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Interactive Context Block Generator
+        function generateContextBlock() {
+            const niche = document.getElementById('ctx-niche').value || '[TA NICHE]';
+            const subniche = document.getElementById('ctx-subniche').value || '[TA SOUS-NICHE]';
+            const audience = document.getElementById('ctx-audience').value || '[TON AUDIENCE]';
+            const problem = document.getElementById('ctx-problem').value || '[PROBLÈME PRINCIPAL]';
+            const promise = document.getElementById('ctx-promise').value || '[TA PROMESSE UNIQUE]';
+            const tone = document.getElementById('ctx-tone').value || '[TON & FORMATS]';
+
+            const res = `MON BLOC DE CONTEXTE MAÎTRE
+
+Ma niche : ${niche}
+Ma sous-niche : ${subniche}
+Mon audience : ${audience}
+Le problème principal de mon audience : ${problem}
+Ma promesse unique : ${promise}
+Mon ton et formats : ${tone}
+
+INSTRUCTION : Garde ces éléments en mémoire pour adapter tes prochaines réponses.`;
+
+            document.getElementById('ctx-result').value = res;
+            showToast("Bloc de Contexte généré avec succès !");
+        }
+
+        function copyGeneratedContext() {
+            const val = document.getElementById('ctx-result').value;
+            if(!val) {
+                showToast("Veuillez générer le bloc d'abord !");
+                return;
+            }
+            const textarea = document.createElement('textarea');
+            textarea.value = val;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast("Bloc de contexte copié !");
+        }
+
+        // Interactive Score Calculator /10
+        function calculateScore() {
+            const checkboxes = document.querySelectorAll('.chk-score');
+            let count = 0;
+            checkboxes.forEach(c => { if(c.checked) count++; });
+
+            const scoreDisplay = document.getElementById('score-display');
+            const scoreRec = document.getElementById('score-recommendation');
+
+            scoreDisplay.innerText = count;
+
+            if(count >= 8) {
+                scoreDisplay.className = "text-4xl font-black text-emerald-400";
+                scoreRec.innerText = "100% Validé ! Ton contenu possède une excellente structure. Prêt pour publication.";
+                scoreRec.className = "p-3.5 bg-emerald-950/60 text-emerald-300 rounded-xl text-xs border border-emerald-800 leading-relaxed";
+            } else if(count >= 6) {
+                scoreDisplay.className = "text-4xl font-black text-amber-400";
+                scoreRec.innerText = "Bon niveau. Ajuste 1 ou 2 détails manquants (accroche ou CTA) avant de publier.";
+                scoreRec.className = "p-3.5 bg-amber-950/60 text-amber-300 rounded-xl text-xs border border-amber-800 leading-relaxed";
+            } else {
+                scoreDisplay.className = "text-4xl font-black text-rose-500";
+                scoreRec.innerText = "Insuffisant. Retravaille le contenu avec les prompts des piliers 3 et 4.";
+                scoreRec.className = "p-3.5 bg-rose-950/60 text-rose-300 rounded-xl text-xs border border-rose-800 leading-relaxed";
+            }
+        }
+
+        // Humanisation Score
+        function updateHumanScore() {
+            const checkboxes = document.querySelectorAll('.chk-human');
+            let count = 0;
+            checkboxes.forEach(c => { if(c.checked) count++; });
+            
+            const badge = document.getElementById('human-score-badge');
+            badge.innerText = `Score Humanisation : ${count} / 5`;
+            if(count === 5) {
+                badge.className = "p-3 bg-emerald-950 text-emerald-300 rounded-xl text-center text-xs font-bold border border-emerald-800";
+            } else {
+                badge.className = "p-3 bg-slate-950 text-slate-400 rounded-xl text-center text-xs font-bold border border-slate-800";
+            }
+        }
+
+        // 30-Day Plan Progress
+        function updatePlanProgress() {
+            const checkboxes = document.querySelectorAll('.chk-plan');
+            let count = 0;
+            checkboxes.forEach(c => { if(c.checked) count++; });
+            const percent = Math.round((count / checkboxes.length) * 100);
+
+            document.getElementById('plan-progress-percent').innerText = percent + "%";
+            document.getElementById('plan-progress-bar').style.width = percent + "%";
+        }
+
+        // Live Search Engine
+        function handleSearch() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('search-clear');
+            const resultsPanel = document.getElementById('search-results-panel');
+            const cardsGrid = document.getElementById('search-cards-grid');
+
+            if (query.length > 1) {
+                clearBtn.classList.remove('hidden');
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+                resultsPanel.classList.remove('hidden');
+
+                // Perform query across known items
+                const searchableItems = [
+                    { title: "Framework de Spécificité", tab: "pilier1", desc: "Planifier son prompt avec sujet, audience, bénéfice, objection, ton et format." },
+                    { title: "Générateur de Bloc de Contexte", tab: "pilier1", desc: "Créer son bloc de contexte maître personnel à fournir à ChatGPT." },
+                    { title: "5 Marqueurs de Personnalité", tab: "pilier2", desc: "Vocabulaire, analogies, formalité, références culturelles, structure des phrases." },
+                    { title: "Méta-Prompt de Style", tab: "pilier2", desc: "Analyser ses propres textes pour générer son Guide de Style Personnel." },
+                    { title: "Prompt 1 — 10 Hooks", tab: "pilier3", desc: "Accroches réparties dans les 5 familles (Curiosité, Contraste, Résultat, Angle, Histoire)." },
+                    { title: "Prompt 2 — Storytelling (HBCRC)", tab: "pilier3", desc: "Structure Hook, Background, Conflict, Resolution et CTA pour raconter une expérience." },
+                    { title: "Prompt 3 — Carrousel Instagram / LinkedIn", tab: "pilier4", desc: "Format 10 slides avec accroche, contenu scannable et CTA final." },
+                    { title: "Prompt 4 — Script Vidéo Courte", tab: "pilier4", desc: "Scripts mot à mot pour Reels, TikTok et YouTube Shorts." },
+                    { title: "Prompt 5 — Thread / X", tab: "pilier4", desc: "Série de 8 tweets structurés et autonomes." },
+                    { title: "Prompt 6 — Post LinkedIn Pro", tab: "pilier4", desc: "Post B2B structuré avec accroche intrigante et question ouverte." },
+                    { title: "Prompt 7 — Machine 1 → 10", tab: "pilier5", desc: "Décliner un contenu pilier en 10 formats multicanaux." },
+                    { title: "Prompt des Prompts — 5 Variations", tab: "pilier6", desc: "Générer 5 angles (Débutant, Avancé, Niche, Rapide, Vente) par prompt." },
+                    { title: "Checklist 10 Points Avant Publication", tab: "checker", desc: "Évaluer et calculer son score de qualité /10 avant de diffuser." },
+                    { title: "Plan d'Action sur 30 Jours", tab: "plan30", desc: "Feuille de route hebdomadaire pour installer son système." }
+                ];
+
+                const matches = searchableItems.filter(item => 
+                    item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)
+                );
+
+                document.getElementById('search-count').innerText = `${matches.length} résultat(s) pour "${query}"`;
+                cardsGrid.innerHTML = '';
+
+                if (matches.length === 0) {
+                    cardsGrid.innerHTML = `<div class="col-span-2 text-center py-8 text-slate-500 text-xs">Aucun élément ne correspond à ta recherche.</div>`;
+                } else {
+                    matches.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = "bg-slate-900 p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/50 transition cursor-pointer";
+                        card.onclick = () => { clearSearch(); switchTab(item.tab); };
+                        card.innerHTML = `
+                            <h4 class="font-bold text-white text-sm mb-1">${item.title}</h4>
+                            <p class="text-xs text-slate-400 mb-3">${item.desc}</p>
+                            <span class="text-[10px] font-semibold text-indigo-400">Ouvrir le module &rarr;</span>
+                        `;
+                        cardsGrid.appendChild(card);
+                    });
+                }
+            } else {
+                clearSearch();
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-clear').classList.add('hidden');
+            document.getElementById('search-results-panel').classList.add('hidden');
+            switchTab('dashboard');
+        }
+
+        function toggleMobileNav() {
+            const container = document.getElementById('nav-container');
+            container.classList.toggle('flex-wrap');
+        }
+    </script>
+</body>
+</html>
