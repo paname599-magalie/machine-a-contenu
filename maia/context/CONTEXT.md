@@ -74,6 +74,7 @@ Vente directe de produits digitaux. La Machine à Contenu IA™ est l'offre d'en
 | Application La Machine à Contenu IA™ | `ma-machine-a-contenu.netlify.app` | Netlify |
 | Lien de paiement (27 euros) | Boutique Beacons `shop.beacons.ai/magalie.constant/847028a3-...` | Beacons |
 | E-mail de contact et support | `contact@promptik.fr` | Infomaniak |
+| Dépôt GitHub (source de l'app + contexte MAÏA) | `github.com/paname599-magalie/machine-a-contenu` | GitHub, privé. Le sous-dossier `maia/` contient la copie du contexte (CLAUDE.md, VOIX.md, plan-30-jours.md, skills) lue chaque matin par la routine cloud |
 
 - **Nom de domaine :** `promptik.fr`, acheté et géré chez **Infomaniak**. La zone DNS y est administrée, les serveurs de noms sont `nsany1` et `nsany2.infomaniak.com`
 - **Sous-domaines :** convention retenue, un sous-domaine dédié par produit. `machine.promptik.fr` pour La Machine, la racine `promptik.fr` reste libre pour un futur site principal
@@ -114,6 +115,7 @@ Le fil narratif qui explique pourquoi La Machine existe. C'est ma matière premi
 ## Mes projets en cours
 
 - **Priorité absolue :** le lancement de La Machine à Contenu IA™ et de CONTENT AUTOPILOT 90™
+- **Routine cloud quotidienne "Contenu quotidien MAIA"** : tourne chaque matin à 7h (heure de Paris), même ordinateur éteint. Lit le plan 30 jours et génère le post, les stories et le visuel du jour. Trois templates Canva réutilisables la nourrissent : post carré simple (`EAHTZP6CUps`), carrousel 10 slides (`EAHTZY5Tzjs`), stories 5 écrans (`EAHTZXZpox8`). Un rappel est programmé le 18 septembre 2026 pour reconstruire le plan suivant avant expiration
 - **Séquences e-mail écrites et automatisées sur Beacons** : une séquence de 6 emails du lead magnet vers La Machine à Contenu IA™, une séquence de 4 emails de La Machine vers l'upsell CONTENT AUTOPILOT 90™. Sources dans `livrables/emailing/`
 - Formation sur l'IA via une plateforme Skool, incluant l'apprentissage de Claude Code
 - Formation sur la vidéo IA via une autre académie Skool
@@ -132,6 +134,8 @@ Le fil narratif qui explique pourquoi La Machine existe. C'est ma matière premi
 - Google Docs et Google Drive
 - Netlify, pour héberger la page de vente et l'application
 - Infomaniak, pour le nom de domaine `promptik.fr` et la messagerie
+- GitHub, pour versionner le workspace et alimenter la routine cloud
+- Canva Pro (12 euros/mois), pour les templates de visuels réutilisables (post, carrousel, stories)
 
 ### Style de communication préféré
 
@@ -156,3 +160,4 @@ La nuance a été posée pendant l'installation : tant que je suis à zéro vent
 - Les séquences e-mail (`livrables/emailing/`) ont été mises à jour le 25 août avec les vrais liens vers `/offre` et `/upsell`, et reportées manuellement dans l'éditeur Beacons par Magalie
 - **Politique de confidentialité du tunnel** rédigée par MAÏA à partir des mentions légales existantes, relue et validée par Magalie le 25 août. Une relecture par un professionnel reste recommandée avant un vrai lancement commercial
 - **Favicon actuel du tunnel** : un wordmark "PROMPTIK" redimensionné en carré, pas une icône dédiée. Lisible comme tache de couleur à la taille d'un onglet, pas comme texte. À remplacer si Magalie crée un jour un symbole dédié
+- **Synchronisation à surveiller :** la routine cloud lit sa copie du contexte dans `maia/` sur GitHub (dépôt `machine-a-contenu`), pas directement ce workspace local. Si le plan 30 jours, VOIX.md ou les skills changent ici, il faut repousser les fichiers vers GitHub pour que la routine reste à jour
