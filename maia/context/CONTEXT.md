@@ -115,7 +115,8 @@ Le fil narratif qui explique pourquoi La Machine existe. C'est ma matière premi
 ## Mes projets en cours
 
 - **Priorité absolue :** le lancement de La Machine à Contenu IA™ et de CONTENT AUTOPILOT 90™
-- **Routine cloud quotidienne "Contenu quotidien MAIA"** : tourne chaque matin à 7h (heure de Paris), même ordinateur éteint. Lit le plan 30 jours et génère le post, les stories et le visuel du jour. Trois templates Canva réutilisables la nourrissent : post carré simple (`EAHTZP6CUps`), carrousel 10 slides (`EAHTZY5Tzjs`), stories 5 écrans (`EAHTZXZpox8`). Un rappel est programmé le 18 septembre 2026 pour reconstruire le plan suivant avant expiration
+- **Routine cloud quotidienne "Contenu quotidien MAIA"** : tourne chaque matin à 8h (heure de Paris), même ordinateur éteint. Lit le plan 30 jours et génère le post texte du jour avec son visuel systématique (même un post de régularité improvisé), et le carrousel quand le plan en prévoit un. Deux templates Canva réutilisables la nourrissent : post carré simple (`EAHTZP6CUps`), carrousel 10 slides (`EAHTZY5Tzjs`). Un rappel est programmé le 18 septembre 2026 pour reconstruire le plan suivant avant expiration
+- **Stories** : retirées de la routine automatique. Chaque jour, Magalie les construit avec MAÏA via Claude Design (canevas multi-artboards avec icônes et éléments graphiques, charte CandyPop), pas via Canva
 - **Séquences e-mail écrites et automatisées sur Beacons** : une séquence de 6 emails du lead magnet vers La Machine à Contenu IA™, une séquence de 4 emails de La Machine vers l'upsell CONTENT AUTOPILOT 90™. Sources dans `livrables/emailing/`
 - Formation sur l'IA via une plateforme Skool, incluant l'apprentissage de Claude Code
 - Formation sur la vidéo IA via une autre académie Skool
